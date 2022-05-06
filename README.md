@@ -2,7 +2,7 @@
 
 
 - Surge Women合约地址：0x0632aDCab8F12edD3b06F99Dc6078FE1FEDD32B0
-- 智能合约源码：surge.sol
+- 智能合约源码：[surge.sol](./surge.sol)
 - tokenId: 1802
 - opensea链接：https://opensea.io/assets/0x0632adcab8f12edd3b06f99dc6078fe1fedd32b0/1802
 - token mint 交易链接：https://etherscan.io/tx/0xbede5e44cc631303a22d066cc269f989469742b5bb6d9a74185e146dab9211e4
@@ -58,7 +58,7 @@ if __name__ == '__main__':
 ```
 
 
-打印的结果是：
+运行打印的结果是：
 
 ```
 Surge Women Passport
@@ -85,7 +85,7 @@ function tokenURI(uint256 tokenId) public view virtual override returns (string 
 
 而 _baseURI由 Surge合约重写了父合约的_baseURI函数。Surge合约在构造函数中设置了baseURI，也就是在构造合约时已经设置了baseURI
 
-```
+```solidity
 constructor(
     string memory _name,
     string memory _symbol,
@@ -105,4 +105,68 @@ constructor(
 https://ipfs.io/ipfs/QmYVsw73haPgm9jK9BopsuKtzuxLANjYn75xeHLpht13D5
 
 https://tth-ipfs.com/ipfs/QmYVsw73haPgm9jK9BopsuKtzuxLANjYn75xeHLpht13D5
+
+
+
+presaleMint为什么要用到merkleProof?
+
+```solidity
+/// @notice Presale minting verifies callers address is in Merkle Root
+/// @param _amountOfTokens Amount of tokens to mint
+/// @param _merkleProof Hash of the callers address used to verify the location of that address in the Merkle Root
+function presaleMint(uint256 _amountOfTokens, bytes32[] calldata _merkleProof)
+    external
+    payable
+    verifyMaxPerUser(msg.sender, _amountOfTokens)
+    verifyMaxSupply(_amountOfTokens)
+    isEnoughEth(_amountOfTokens)
+{
+    require(status == SaleStatus.Presale, "Presale not active");
+
+    bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+    require(MerkleProof.verify(_merkleProof, merkleRoot, leaf), "Not in presale list");
+
+    _mintedAmount[msg.sender] += _amountOfTokens;
+    _safeMint(msg.sender, _amountOfTokens);
+}
+```
+
+
+
+设置merkle root
+https://etherscan.io/tx/0x4d6e0c07516115b8a803f77fe3067d52091c8d888eecb8f60fe897a68501ea27
+
+```solidity
+/// @notice Set Presale Merkle Root
+/// @param _merkleRoot Merkle Root hash
+function setMerkleRoot(bytes32 _merkleRoot) public onlyOwner {
+    merkleRoot = _merkleRoot;
+}
+```
+
+presale
+
+https://etherscan.io/tx/0x387dd09362758758b52d56dd2093724039fbd5592b13613cc347a2c1a216b581
+
+
+```solidity
+/// @notice Presale minting verifies callers address is in Merkle Root
+/// @param _amountOfTokens Amount of tokens to mint
+/// @param _merkleProof Hash of the callers address used to verify the location of that address in the Merkle Root
+function presaleMint(uint256 _amountOfTokens, bytes32[] calldata _merkleProof)
+    external
+    payable
+    verifyMaxPerUser(msg.sender, _amountOfTokens)
+    verifyMaxSupply(_amountOfTokens)
+    isEnoughEth(_amountOfTokens)
+{
+    require(status == SaleStatus.Presale, "Presale not active");
+
+    bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+    require(MerkleProof.verify(_merkleProof, merkleRoot, leaf), "Not in presale list");
+
+    _mintedAmount[msg.sender] += _amountOfTokens;
+    _safeMint(msg.sender, _amountOfTokens);
+}
+```
 

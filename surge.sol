@@ -1707,6 +1707,8 @@ pragma solidity ^0.8.1;
 
 
 contract Surge is ERC721A, ReentrancyGuard, Ownable, ERC2981ContractWideRoyalties {
+
+    // 将整数转为ascii码字符串,toString
     using Strings for uint256;
 
     // Status of the token sale
@@ -1723,9 +1725,9 @@ contract Surge is ERC721A, ReentrancyGuard, Ownable, ERC2981ContractWideRoyaltie
     bytes32 public merkleRoot;
     string public baseTokenURI;
 
-    uint64 public constant MAX_SUPPLY = 5000;
-    uint64 public constant MAX_PER_USER = 5;
-    uint128 public price;
+    uint64 public constant MAX_SUPPLY = 5000; // 最大供应量
+    uint64 public constant MAX_PER_USER = 5; // 每个地址mint的token数量不超过次数
+    uint128 public price; // mint 的价格
 
     /**
      * @dev Sale is paused by default upon deploy
@@ -1810,6 +1812,7 @@ contract Surge is ERC721A, ReentrancyGuard, Ownable, ERC2981ContractWideRoyaltie
         _safeMint(msg.sender, _amountOfTokens);
     }
 
+    // 批量铸造
     /// @notice Allows the owner to mint for the organizations treasury
     /// @param _amountOfTokens Amount of tokens to mint
     function batchMinting(uint256 _amountOfTokens)
@@ -1823,6 +1826,7 @@ contract Surge is ERC721A, ReentrancyGuard, Ownable, ERC2981ContractWideRoyaltie
         _safeMint(msg.sender, _amountOfTokens);
     }
 
+    // 版税
     /*----------------------------------------------*/
     /*             ROYALTIES FUNCTION              */
     /*--------------------------------------------*/
