@@ -110,6 +110,12 @@ https://tth-ipfs.com/ipfs/QmYVsw73haPgm9jK9BopsuKtzuxLANjYn75xeHLpht13D5
 
 presaleMint为什么要用到merkleProof?
 
+项目方做了预售，对所有参加预售的地址构造了一棵merkle tree，并将merkle root填入智能合约，调用presale的地址必须在merkle tree中。
+
+使用merkle tree可以隐藏了具体地址。
+
+
+
 ```solidity
 /// @notice Presale minting verifies callers address is in Merkle Root
 /// @param _amountOfTokens Amount of tokens to mint
@@ -149,24 +155,9 @@ presale
 https://etherscan.io/tx/0x387dd09362758758b52d56dd2093724039fbd5592b13613cc347a2c1a216b581
 
 
-```solidity
-/// @notice Presale minting verifies callers address is in Merkle Root
-/// @param _amountOfTokens Amount of tokens to mint
-/// @param _merkleProof Hash of the callers address used to verify the location of that address in the Merkle Root
-function presaleMint(uint256 _amountOfTokens, bytes32[] calldata _merkleProof)
-    external
-    payable
-    verifyMaxPerUser(msg.sender, _amountOfTokens)
-    verifyMaxSupply(_amountOfTokens)
-    isEnoughEth(_amountOfTokens)
-{
-    require(status == SaleStatus.Presale, "Presale not active");
+同一个地址2次调用presale，那么它提供的merkle proof两次肯定是一样的。
+https://etherscan.io/tx/0x5c76c3e78933ccc9f50e3a6f979226c02b9ab96ed320cbd68d4fbf3361c2b366
+https://etherscan.io/tx/0xe64591ba680b9fb18f3bac61a20b7343801f03a9905d1f260df4d945089a056e
 
-    bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-    require(MerkleProof.verify(_merkleProof, merkleRoot, leaf), "Not in presale list");
 
-    _mintedAmount[msg.sender] += _amountOfTokens;
-    _safeMint(msg.sender, _amountOfTokens);
-}
-```
 
